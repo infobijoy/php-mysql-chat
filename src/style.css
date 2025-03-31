@@ -15,7 +15,6 @@ form#sendMessageForm {
 }
 .typeing {
   height: 48px;
-  padding-right: 45px;
   width: 100%;
 }
 .sent-btn {
@@ -23,7 +22,7 @@ form#sendMessageForm {
   margin-top: 0px !important;
 }
 ul#messagesList {
-  height: calc(100vh - 116px);
+  height: calc(100vh - 132px);
   overflow: auto;
 }
 .chat {

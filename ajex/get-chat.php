@@ -22,12 +22,13 @@ if (!$selectedUserId) {
 // Fetch messages between the logged-in user and the selected user
 try {
     $stmt = $conn->prepare("
-        SELECT m.*, u1.username AS sender_username, u2.username AS receiver_username
-        FROM messages m
-        JOIN users u1 ON m.sender_id = u1.id
-        JOIN users u2 ON m.receiver_id = u2.id
-        WHERE (m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)
-        ORDER BY m.created_at ASC
+        SELECT m.*, 
+          CASE WHEN m.is_seen THEN 'Seen' ELSE 'Delivered' END AS status_text,
+          CASE WHEN m.seen_at IS NOT NULL THEN m.seen_at ELSE NULL END AS seen_time
+          FROM messages m 
+          WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+          OR (m.sender_id = ? AND m.receiver_id = ?) 
+          ORDER BY m.created_at ASC
     ");
     $stmt->bind_param('iiii', $_SESSION['user_id'], $selectedUserId, $selectedUserId, $_SESSION['user_id']);
     $stmt->execute();
