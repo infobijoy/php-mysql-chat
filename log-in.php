@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id'])) {
+    header('Location: ./deshboard.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,46 +17,46 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-md w-96">
-    <h1 class="text-2xl font-bold mb-6 text-center">Log In</h1>
-    <form id="loginForm">
-      <!-- Email Field -->
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your email"
-          required
-        />
-      </div>
+<body class="">
 
-      <!-- Password Field -->
-      <div class="mb-6">
-        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your password"
-          required
-        />
-      </div>
+<div class="flex justify-center items-center h-screen bg-gradient-to-r from-blue-100 to-indigo-200">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-96 transform transition-transform duration-500 hover:scale-105">
+        <h1 class="text-3xl font-bold mb-8 text-center text-blue-600 animate-pulse">Log In</h1>
+        <form id="loginForm">
+            <div class="mb-6">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300 ease-in-out transform hover:scale-102"
+                    placeholder="Enter your email"
+                    required
+                />
+            </div>
 
-      <!-- Log In Button -->
-      <button
-        type="submit"
-        id="loginButton"
-        class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        Log In
-      </button>
-    </form>
-  </div>
+            <div class="mb-8">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300 ease-in-out transform hover:scale-102"
+                    placeholder="Enter your password"
+                    required
+                />
+            </div>
+
+            <button
+                type="submit"
+                id="loginButton"
+                class="w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+                Log In
+            </button>
+        </form>
+    </div>
+</div>
 
   <script>
     $(document).ready(function () {

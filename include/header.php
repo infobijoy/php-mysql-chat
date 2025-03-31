@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inbox</title>
   <script src="./src/tailwindcss.js"></script>
+  <script src="./src/jquery-3.6.0.min.js"></script>
   <link href="./src/full.css" rel="stylesheet">
   <link rel="stylesheet" href="./src/toastify.min.css">
   <script src="./src/toastify-js.js"></script>

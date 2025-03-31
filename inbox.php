@@ -66,7 +66,7 @@ include './include/header.php';
             </div>
             <div class="ms-3">
                 <span class="block text-black font-bold"><?php echo $userName; ?></span>
-                <span class="text-gray-800 text-sm"><?php echo $lastSeen; ?></span>
+                <span class="text-gray-800 text-sm" id="last-seen"></span>
             </div>
         </div>
         <ul id="messagesList" class="space-y-4 px-2.5">
@@ -445,6 +445,54 @@ setInterval(fetchMessages, 2000);
 
 // Check for visible messages every second
 setInterval(checkMessageVisibility, 1000);
+
+$(document).ready(function () {
+    function updateStatus() {
+        $.ajax({
+            url: './ajex/self-status.php',
+            type: 'POST',
+            data: { 
+                action: 'update', 
+                user_id: '<?php echo $loggedInUserId; ?>' 
+            },
+            success: function (response) {
+                console.log('Status updated');
+            }
+        });
+    }
+
+    function fetchLastSeen() {
+    let userId = new URLSearchParams(window.location.search).get('user_id');
+    if (userId) {
+        $.ajax({
+            url: './ajex/another-status.php',
+            type: 'POST',
+            data: { 
+                action: 'fetch', 
+                user_id: userId 
+            },
+            dataType: 'json', // Ensure the response is treated as JSON
+            success: function (response) {
+                if (response.last_seen) {
+                    $('#last-seen').text(response.last_seen);
+                } else {
+                    $('#last-seen').text('No Data');
+                }
+            },
+            error: function () {
+                $('#last-seen').text('Error fetching data');
+            }
+        });
+    }
+}
+    updateStatus();
+    fetchLastSeen()
+    setInterval(function () {
+        updateStatus();
+        fetchLastSeen();
+    }, 3000);
+
+});
 </script>
 
 <?php 
