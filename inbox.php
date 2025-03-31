@@ -74,9 +74,9 @@ include './include/header.php';
         </ul>
         
         <!-- Scroll to Bottom Button -->
-        <button id="goToBottomButton" class="hidden fixed bottom-20 right-4 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600">
-            <i class="fa-solid fa-arrow-down"></i>
-        </button>
+        <button id="goToBottomButton" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600">
+    <i class="fa-solid fa-arrow-down"></i>
+</button>
         
         <!-- Send Message Form -->
         <form id="sendMessageForm" class="flex items-center fixed bottom-0 w-full bg-white p-2">

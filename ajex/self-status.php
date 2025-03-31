@@ -11,10 +11,9 @@ header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = intval($_SESSION['user_id']);
-    $currentTime = date('Y-m-d H:i:s');
 
-    $stmt = $conn->prepare("UPDATE users SET status = ? WHERE id = ?");
-    $stmt->bind_param('si', $currentTime, $userId);
+    $stmt = $conn->prepare("UPDATE users SET status = NOW() WHERE id = ?");
+    $stmt->bind_param('i', $userId);
 
     if ($stmt->execute()) {
         echo json_encode(['success' => 'Status updated']);
@@ -24,5 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt->close();
 }
+
 $conn->close();
 ?>

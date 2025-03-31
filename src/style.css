@@ -52,3 +52,46 @@ ul#messagesList {
 .delivered-status {
   color: #6b7280; /* gray-500 */
 }
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-active {
+  background-color: #10b981; /* green-500 */
+}
+
+.status-inactive {
+  background-color: #9ca3af; /* gray-400 */
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+.password-toggle:hover {
+  color: #3b82f6;
+}
+.password-container {
+  position: relative;
+}

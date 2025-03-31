@@ -4,116 +4,151 @@ if (isset($_SESSION['user_id'])) {
     header('Location: ./deshboard.php');
     exit;
 }
+include './include/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log In</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.7.3/dist/full.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-</head>
-<body class="">
-
-<div class="flex justify-center items-center h-screen bg-gradient-to-r from-blue-100 to-indigo-200">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-96 transform transition-transform duration-500 hover:scale-105">
-        <h1 class="text-3xl font-bold mb-8 text-center text-blue-600 animate-pulse">Log In</h1>
-        <form id="loginForm">
-            <div class="mb-6">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300 ease-in-out transform hover:scale-102"
-                    placeholder="Enter your email"
-                    required
-                />
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+                <h1 class="text-3xl font-bold">Welcome Back</h1>
+                <p class="opacity-90 mt-1">Sign in to your account</p>
             </div>
+            
+            <div class="p-8">
+                <form id="loginForm">
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <div class="relative">
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                placeholder="your@email.com"
+                                required
+                            />
+                            <i class="fas fa-envelope absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
 
-            <div class="mb-8">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-300 ease-in-out transform hover:scale-102"
-                    placeholder="Enter your password"
-                    required
-                />
+                    <div class="mb-6">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <div class="password-container relative">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 pr-10"
+                                placeholder="••••••••"
+                                required
+                            />
+                            <i class="password-toggle fas fa-eye-slash" id="togglePassword"></i>
+                        </div>
+                        <div class="mt-2 text-right">
+                            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="loginButton"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 font-medium flex items-center justify-center"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i> Log In
+                    </button>
+
+                    <div class="mt-6 text-center text-sm text-gray-600">
+                        Don't have an account? 
+                        <a href="./sing-up.php" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">Sign up</a>
+                    </div>
+                </form>
             </div>
-
-            <button
-                type="submit"
-                id="loginButton"
-                class="w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out transform hover:scale-105"
-            >
-                Log In
-            </button>
-        </form>
+        </div>
     </div>
-</div>
 
-  <script>
+    <script>
     $(document).ready(function () {
-      // Handle form submission
-      $('#loginForm').on('submit', async function (e) {
-        e.preventDefault();
+        // Password toggle functionality
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        
+        togglePassword.addEventListener('click', function (e) {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle the eye / eye slash icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
 
-        const formData = {
-          email: $('#email').val(),
-          password: $('#password').val(),
-        };
+        // Handle form submission
+        $('#loginForm').on('submit', async function (e) {
+            e.preventDefault();
+            
+            // Disable button and show loading state
+            const loginBtn = $('#loginButton');
+            loginBtn.prop('disabled', true);
+            loginBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i> Logging in...');
+            
+            const formData = {
+                email: $('#email').val(),
+                password: $('#password').val(),
+            };
 
-        try {
-          const response = await $.ajax({
-            url: './ajex/login.php',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            dataType: 'json',
-          });
+            try {
+                const response = await $.ajax({
+                    url: './ajex/login.php',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    dataType: 'json',
+                });
 
-          if (response.success) {
-            Toastify({
-              text: "Login successful! Redirecting...",
-              duration: 3000,
-              close: true,
-              gravity: "top",
-              position: "right",
-              backgroundColor: "green",
-            }).showToast();
+                if (response.success) {
+                    Toastify({
+                        text: "Login successful! Redirecting...",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "#4CAF50",
+                        stopOnFocus: true,
+                    }).showToast();
 
-            setTimeout(() => {
-              window.location.href = './deshboard.php';
-            }, 3000);
-          } else {
-            Toastify({
-              text: response.message || "Invalid email or password.",
-              duration: 3000,
-              close: true,
-              gravity: "top",
-              position: "right",
-              backgroundColor: "red",
-            }).showToast();
-          }
-        } catch (error) {
-          console.error('Error during login:', error);
-          Toastify({
-            text: "An error occurred. Please try again.",
-            duration: 3000,
-            close: true,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "red",
-          }).showToast();
-        }
-      });
+                    setTimeout(() => {
+                        window.location.href = './deshboard.php';
+                    }, 3000);
+                } else {
+                    loginBtn.prop('disabled', false);
+                    loginBtn.html('<i class="fas fa-sign-in-alt mr-2"></i> Log In');
+                    
+                    Toastify({
+                        text: response.message || "Invalid email or password.",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "#F44336",
+                        stopOnFocus: true,
+                    }).showToast();
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                loginBtn.prop('disabled', false);
+                loginBtn.html('<i class="fas fa-sign-in-alt mr-2"></i> Log In');
+                
+                Toastify({
+                    text: "An error occurred. Please try again.",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#F44336",
+                    stopOnFocus: true,
+                }).showToast();
+            }
+        });
     });
-  </script>
-</body>
-</html>
+    </script>
+
+<?php include './include/footer.php'; ?>
