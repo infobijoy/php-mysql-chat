@@ -110,6 +110,7 @@ const messagesList = document.getElementById('messagesList');
 
 // Helper function to format timestamps
 const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
     const messageDate = new Date(timestamp);
     const now = new Date();
 
@@ -162,6 +163,7 @@ const scrollToBottom = () => {
     });
     isScrolledUp = false;
     goToBottomButton.classList.add('hidden');
+    markMessagesAsSeen(); // Mark messages as seen when scrolling to bottom
 };
 
 // Function to show new message toaster
@@ -197,6 +199,64 @@ const showNewMessageToast = (message) => {
             padding: "0.75rem",
         }
     }).showToast();
+};
+
+// Function to mark messages as seen
+const markMessagesAsSeen = async () => {
+    try {
+        const response = await fetch(`./ajex/mark-as-seen.php?user_id=${selectedUserId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: <?= $_SESSION['user_id'] ?> })
+        });
+        const result = await response.json();
+        if (result.success) {
+            // Update seen status in UI
+            document.querySelectorAll('.message-item').forEach(item => {
+                if (item.dataset.senderId == selectedUserId && !item.dataset.seen) {
+                    const footer = item.querySelector('.chat-footer');
+                    if (footer) {
+                        footer.innerHTML = `
+                            <span class="text-blue-500">Seen</span>
+                            <time class="text-xs opacity-50">${formatTimestamp(result.seen_at)}</time>
+                        `;
+                        item.dataset.seen = 'true';
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error marking messages as seen:', error);
+    }
+};
+
+// Function to check if element is in viewport
+function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+// Function to check message visibility and mark as seen
+const checkMessageVisibility = () => {
+    const messages = document.querySelectorAll('.message-item');
+    let shouldMarkAsSeen = false;
+    
+    messages.forEach(message => {
+        if (message.dataset.senderId == selectedUserId && !message.dataset.seen && isElementInViewport(message)) {
+            shouldMarkAsSeen = true;
+        }
+    });
+    
+    if (shouldMarkAsSeen) {
+        markMessagesAsSeen();
+    }
 };
 
 // Function to fetch and display messages
@@ -239,6 +299,7 @@ const fetchMessages = async () => {
                         timeDifference > 5; // Show if time difference > 5 minute
 
                     const formattedTime = formatTimestamp(message.created_at);
+                    const seenTime = formatTimestamp(message.seen_at);
 
                     if (showTime) {
                         const timeElement = document.createElement('li');
@@ -252,46 +313,49 @@ const fetchMessages = async () => {
                     // Render the message bubble
                     const messageElement = document.createElement('li');
                     const isSender = message.sender_id == <?= $_SESSION['user_id'] ?>;
-                    messageElement.className = `chat ${isSender ? 'chat-end' : 'chat-start'}`;
+                    messageElement.className = `chat message-item ${isSender ? 'chat-end' : 'chat-start'}`;
+                    messageElement.dataset.messageId = message.id;
+                    messageElement.dataset.senderId = message.sender_id;
+                    messageElement.dataset.seen = message.is_seen ? 'true' : 'false';
+
                     messageElement.innerHTML = `
-    <div class="chat-image avatar">
-        <div class="w-10 rounded-full">
-            <img
-                alt="User Avatar"
-                src="./profile-photo/${isSender ? '<?php echo $reciverPhoto;?>' : '<?php echo $senderPhoto;?>'}" />
-        </div>
-    </div>
-    <div class="chat-header overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0;">
-        <time class="text-xs opacity-50">${formattedTime}</time>
-    </div>
-    <div class="chat-bubble ${
-        isSender ? 'chat-bubble-secondary' : 'chat-bubble-accent'
-    }">${message.message}</div>
-    
-    <div class="chat-footer overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0;">
-        ${message.is_seen ? 
-          `<span class="text-blue-500">Seen</span> 
-           <time class="text-xs opacity-50">${message.seen_at ? formatTimestamp(message.seen_at) : ''}</time>` : 
-          '<span class="text-gray-500">Delivered</span>'}
-    </div>
-`;
+                        <div class="chat-image avatar">
+                            <div class="w-10 rounded-full">
+                                <img
+                                    alt="User Avatar"
+                                    src="./profile-photo/${isSender ? '<?php echo $reciverPhoto;?>' : '<?php echo $senderPhoto;?>'}" />
+                            </div>
+                        </div>
+                        <div class="chat-header overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0;">
+                            <time class="text-xs opacity-50">${formattedTime}</time>
+                        </div>
+                        <div class="chat-bubble ${isSender ? 'chat-bubble-secondary' : 'chat-bubble-accent'}">${message.message}</div>
+                        <div class="chat-footer overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0; opacity: 0;">
+                            ${isSender ? 
+                                (message.is_seen ? 
+                                    `<span class="text-blue-500">Seen</span>
+                                     <time class="text-xs opacity-50">${seenTime}</time>` : 
+                                    '<span class="text-gray-500">Delivered</span>') : 
+                                ''}
+                        </div>
+                    `;
 
-// Toggle chat header & footer on bubble click
-const chatBubble = messageElement.querySelector('.chat-bubble');
-const chatHeader = messageElement.querySelector('.chat-header');
-const chatFooter = messageElement.querySelector('.chat-footer');
+                    // Toggle chat header & footer on bubble click
+                    const chatBubble = messageElement.querySelector('.chat-bubble');
+                    const chatHeader = messageElement.querySelector('.chat-header');
+                    const chatFooter = messageElement.querySelector('.chat-footer');
 
-chatBubble.addEventListener('click', () => {
-    [chatHeader, chatFooter].forEach(element => {
-        if (element.style.maxHeight === "0px") {
-            element.style.maxHeight = element.scrollHeight + "px";
-            element.style.opacity = "1";
-        } else {
-            element.style.maxHeight = "0px";
-            element.style.opacity = "0";
-        }
-    });
-});
+                    chatBubble.addEventListener('click', () => {
+                        [chatHeader, chatFooter].forEach(element => {
+                            if (element.style.maxHeight === "0px") {
+                                element.style.maxHeight = element.scrollHeight + "px";
+                                element.style.opacity = "1";
+                            } else {
+                                element.style.maxHeight = "0px";
+                                element.style.opacity = "0";
+                            }
+                        });
+                    });
 
                     messagesList.appendChild(messageElement);
                 });
@@ -299,6 +363,8 @@ chatBubble.addEventListener('click', () => {
                 // Only scroll to bottom if not scrolled up
                 if (!isScrolledUp) {
                     scrollToBottom();
+                } else {
+                    checkMessageVisibility();
                 }
             }
         }
@@ -327,9 +393,14 @@ setInterval(toggleGoToBottomButton, 1000);
 // Handle sending a message
 document.getElementById('sendMessageForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const messageInput = document.getElementById('message');
+    const messageText = messageInput.value.trim();
+    
+    if (!messageText) return;
+
     const formData = {
         receiver_id: selectedUserId,
-        message: document.getElementById('message').value,
+        message: messageText,
     };
 
     try {
@@ -343,7 +414,7 @@ document.getElementById('sendMessageForm').addEventListener('submit', async (e) 
 
         const result = await response.json();
         if (result.success) {
-            document.getElementById('message').value = ''; // Clear the input field
+            messageInput.value = ''; // Clear the input field
             fetchMessages(); // Refresh messages immediately
         } else {
             alert('Failed to send message. Please try again.');
@@ -355,7 +426,10 @@ document.getElementById('sendMessageForm').addEventListener('submit', async (e) 
 });
 
 // Event listener for scrolling
-messagesList.addEventListener('scroll', toggleGoToBottomButton);
+messagesList.addEventListener('scroll', () => {
+    toggleGoToBottomButton();
+    checkMessageVisibility();
+});
 
 // Click handler for the goToBottomButton
 goToBottomButton.addEventListener('click', scrollToBottom);
@@ -368,6 +442,9 @@ fetchMessages().then(() => {
 
 // Poll for new messages every 2 seconds
 setInterval(fetchMessages, 2000);
+
+// Check for visible messages every second
+setInterval(checkMessageVisibility, 1000);
 </script>
 
 <?php 

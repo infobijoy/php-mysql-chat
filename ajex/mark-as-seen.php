@@ -1,6 +1,6 @@
 <?php
 session_start();
-include './include/config-db.php';
+include '../include/config-db.php';
 
 $userId = $_SESSION['user_id'];
 $contactId = $_GET['user_id'];
@@ -12,5 +12,14 @@ $stmt = $conn->prepare($query);
 $stmt->bind_param("ii", $userId, $contactId);
 $stmt->execute();
 
-echo json_encode(['success' => true]);
+// Get the timestamp of when messages were marked as seen
+$seenAt = date('Y-m-d H:i:s');
+
+echo json_encode([
+    'success' => true,
+    'seen_at' => $seenAt
+]);
+
+$stmt->close();
+$conn->close();
 ?>

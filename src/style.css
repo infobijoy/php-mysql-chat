@@ -31,3 +31,24 @@ ul#messagesList {
 .chat-bubble {
   white-space: break-spaces;
 }
+.chat-bubble {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-bubble:hover {
+  filter: brightness(95%);
+}
+
+.message-status {
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.seen-status {
+  color: #3b82f6; /* blue-500 */
+}
+
+.delivered-status {
+  color: #6b7280; /* gray-500 */
+}
