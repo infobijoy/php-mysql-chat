@@ -1,22 +1,18 @@
 <?php
 session_start();
-
 // Redirect to login if the user is not logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: ./log-in.php');
     exit;
 }
-
 // Get the selected user's ID from the query string
 $selectedUserId = $_GET['user_id'] ?? null;
-
 // Validate the selected user ID
 if (!$selectedUserId) {
     die("Invalid user ID.");
 }
-
 include './include/config-db.php';
-
+require_once './include/auth-middleware.php';
 // Fetch selected user data from the database
 $query = "SELECT id, username, email, password_hash, display_name, profile_picture, status, created_at, updated_at FROM users WHERE id = ?";
 $stmt = $conn->prepare($query);

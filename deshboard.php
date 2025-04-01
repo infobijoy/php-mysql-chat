@@ -1,12 +1,17 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ./log-in.php');
-    exit;
-}
-
 include './include/config-db.php';
 
+if (!isset($_SESSION['user_id'])) {
+  include './include/auto-login.php';
+  // Check again after auto-login attempt
+  if (!isset($_SESSION['user_id'])) {
+      // Auto-login failed, redirect to login page
+      header('Location: ./log-in.php');
+      exit;
+  }
+}
+require_once './include/auth-middleware.php';
 // Get current user data
 $current_user_stmt = $conn->prepare("SELECT username, display_name, profile_picture FROM users WHERE id = ?");
 $current_user_stmt->bind_param('i', $_SESSION['user_id']);
