@@ -9,7 +9,8 @@
   padding: 10px;
   z-index: 3;
 }
-form#sendMessageForm {
+form#sendMessageForm,
+.user-content {
   max-width: 500px;
   position: relative;
 }

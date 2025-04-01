@@ -1,8 +1,17 @@
 <?php
 session_start();
 if (isset($_SESSION['user_id'])) {
-    header('Location: ./deshboard.php');
-    exit;
+  header('Location: ./deshboard.php');
+  exit;
+}
+if (!isset($_SESSION['user_id'])) {
+include './include/auto-login.php';
+// Check again after auto-login attempt
+if (isset($_SESSION['user_id'])) {
+  // Auto-login successful, redirect to dashboard
+  header('Location: ./deshboard.php');
+  exit;
+}
 }
 include './include/header.php';
 ?>

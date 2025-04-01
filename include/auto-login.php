@@ -41,6 +41,7 @@ if (isset($_COOKIE['remember_token'])) {
                     $_SESSION['email'] = $userData['email'];
                     $_SESSION['display_name'] = $userData['display_name'];
                     $_SESSION['profile_picture'] = $userData['profile_picture'];
+                    $_SESSION['logged_in'] = true;
 
                     // Regenerate the token for security (recommended)
                     $newValidator = bin2hex(random_bytes(32));

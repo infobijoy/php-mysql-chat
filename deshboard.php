@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id'])) {
   }
 }
 require_once './include/auth-middleware.php';
+
 // Get current user data
 $current_user_stmt = $conn->prepare("SELECT username, display_name, profile_picture FROM users WHERE id = ?");
 $current_user_stmt->bind_param('i', $_SESSION['user_id']);
@@ -46,8 +47,8 @@ $current_user = $current_user_result->fetch_assoc();
     </div>
   </div>
 </div>
-
-<div class="flex flex-col h-screen bg-gray-50">
+ <div class="container chat-container px-2 mx-auto">
+<div class="flex flex-col h-screen user-content bg-white rounded-lg shadow-mdbg-white shadow-md" style="height: 100vh; overflow-y: auto;">
   <!-- Header -->
   <div class="bg-blue-500 text-white p-4 flex justify-between items-center">
     <h1 class="text-xl font-bold">Messages</h1>
@@ -70,6 +71,7 @@ $current_user = $current_user_result->fetch_assoc();
     <!-- Users will be loaded via AJAX -->
   </div>
 </div>
+ </div>
 
 <script>
 // Store previous user data for comparison

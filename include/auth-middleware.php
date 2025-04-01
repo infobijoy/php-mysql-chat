@@ -39,10 +39,4 @@ function verifyAuth($conn) {
     
     return false;
 }
-
-// Usage in protected pages:
-if (!verifyAuth($conn)) {
-    header('Location: /log-in.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
-    exit;
-}
 ?>

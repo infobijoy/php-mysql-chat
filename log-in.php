@@ -2,7 +2,6 @@
 session_start();
 include './include/config-db.php';
 if (isset($_SESSION['user_id'])) {
-    // Auto-login successful, redirect to dashboard
     header('Location: ./deshboard.php');
     exit;
 }
