@@ -44,7 +44,7 @@ $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $loggedInUser = $result->fetch_assoc();
-    $reciverPhoto = $loggedInUser['profile_picture'] ?: "demo-1.jpg";
+    $reciverPhoto = $loggedInUser['profile_picture'] ?: "default.jpg";
 } else {
     die("Logged-in user not found.");
 }
@@ -68,6 +68,7 @@ include './include/header.php';
             <div class="ms-3">
                 <span class="block text-black font-bold"><?php echo $userName; ?></span>
                 <span class="text-gray-800 text-sm" id="last-seen"></span>
+                <span id="typing-status" class="text-sm text-green-600"></span>
             </div>
         </div>
         <ul id="messagesList" class="space-y-4 px-2.5">
@@ -76,8 +77,8 @@ include './include/header.php';
         
         <!-- Scroll to Bottom Button -->
         <button id="goToBottomButton" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600">
-    <i class="fa-solid fa-arrow-down"></i>
-</button>
+        <i class="fa-solid fa-arrow-down"></i>
+        </button>
         
         <!-- Send Message Form -->
         <form id="sendMessageForm" class="flex items-center fixed bottom-0 w-full bg-white p-2">
@@ -110,7 +111,7 @@ const messagesContainer = document.getElementById('messagesContainer');
 const messagesList = document.getElementById('messagesList');
 
 // Helper function to format timestamps
-const formatTimestamp = (timestamp) => {
+    const formatTimestamp = (timestamp) => {
     if (!timestamp) return '';
     const messageDate = new Date(timestamp);
     const now = new Date();
@@ -494,8 +495,76 @@ $(document).ready(function () {
     }, 3000);
 
 });
+
+    let messageInput = document.getElementById('message');
+    let isTyping = false;
+    let typingTimer;
+    let typingFor = '<?php echo $selectedUserId; ?>';
+
+    // Function to send typing status update
+    function sendTypingStatus(typing) {
+        fetch('./ajex/typing-status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'typing_for=' + encodeURIComponent(typingFor) + '&is_typing=' + (typing ? '1' : '0')
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log(data);
+        });
+    }
+    // Start typing indicator
+    function startTyping() {
+        if (!isTyping) {
+            isTyping = true;
+            sendTypingStatus(true);
+        }
+        // Reset the timer
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(stopTyping, 500); // Stop after 0.5 seconds of inactivity
+    }
+
+    // Stop typing indicator
+    function stopTyping() {
+        if (isTyping) {
+            isTyping = false;
+            sendTypingStatus(false);
+        }
+    }
+    messageInput.addEventListener('input', startTyping);
+    messageInput.addEventListener('keydown', startTyping);
+    messageInput.addEventListener('blur', stopTyping);
+    messageInput.addEventListener('input', function() {
+        if (this.value.length === 0) {
+            stopTyping();
+        }
+    });
 </script>
 
+
+<script>
+        function checkTyping() {
+            var typingForUserId = '<?php echo $selectedUserId;?>'; // Replace with the actual user ID you're checking for
+            var loggedInUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0; ?>; // PHP session for loged in user
+            if(loggedInUserId === 0){
+                document.getElementById('typing-status').innerHTML = "Please Log In";
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('typing-status').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.open("GET", "./ajex/see-typing-status.php?typingForUserId=" + typingForUserId + "&loggedInUserId=" + loggedInUserId, true); //Replace your_php_file.php with the actual file name.
+            xhr.send();
+        }
+
+        setInterval(checkTyping, 1000); // Check every 1 second
+    </script>
 <?php 
 include "./include/footer.php";
 ?>

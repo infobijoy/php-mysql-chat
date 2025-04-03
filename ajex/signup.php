@@ -57,9 +57,9 @@ $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
 // Insert the user into the database
 try {
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash, display_name, profile_picture, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())");
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password_hash, display_name, profile_picture, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NOW())");
     $status = 1; // Or any default status
-    $stmt->bind_param('sssssi', $username, $email, $passwordHash, $displayName, $profilePicturePath, $status);
+    $stmt->bind_param('sssss', $username, $email, $passwordHash, $displayName, $profilePicturePath);
     $stmt->execute();
 
     // Get the newly created user ID
