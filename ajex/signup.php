@@ -98,7 +98,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Signup successful!',
-        'redirect' => 'deshboard.php'
+        'redirect' => './'
     ]);
 
 } catch (Exception $e) {

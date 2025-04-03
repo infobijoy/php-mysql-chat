@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION['user_id'])) {
-    header('Location: ./deshboard.php');
+    header('Location: ./');
     exit;
 }
 include './include/header.php';
@@ -298,7 +298,7 @@ include './include/header.php';
                     }).showToast();
 
                     setTimeout(() => {
-                        window.location.href = './deshboard.php';
+                        window.location.href = './';
                     }, 3000);
                 } else {
                     $signupButton.prop('disabled', false);

@@ -17,7 +17,13 @@ function checkTypingStatus($conn, $loggedInUserId, $typingForUserId) {
         $diff = abs($currentTime - $typingStatusTimestamp);
 
         if ($diff <= 3) {
-            return "User is typing now...";
+            
+            return  '<span class="typing-indicator flex space-x-1 items-center">
+                                <span class="text-xs italic">typing</span>
+                                <span class="w-1 h-1 rounded-full bg-current opacity-70"></span>
+                                <span class="w-1 h-1 rounded-full bg-current opacity-70"></span>
+                                <span class="w-1 h-1 rounded-full bg-current opacity-70"></span>
+                            </span>';
         } else {
             return ""; // Or some other message like "" or "User is not typing"
         }

@@ -59,7 +59,7 @@ include './include/header.php';
     <!-- Messages Container -->
     <div id="messagesContainer" class="bg-white z-50 rounded-lg shadow-md" style="height: 100vh; overflow-y: auto;">
         <div class="chat-box-top-head flex bg-indigo-300">
-            <a href="./deshboard.php" class="text-black items-center flex py-2 px-2"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="./" class="text-black items-center flex py-2 px-2"><i class="fa-solid fa-arrow-left"></i></a>
             <div class="avatar ms-1">
                 <div class="w-12 rounded-full">
                     <img src="./profile-photo/<?php echo $senderPhoto; ?>" />

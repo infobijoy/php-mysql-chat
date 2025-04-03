@@ -167,8 +167,10 @@ if ($openchat) {
             </div>
             <div>
                 <h2 class="font-semibold">'.$userName.'</h2>
-                <p id="last-seen" class="text-xs opacity-70">Loading...</p>
-                <span id="typing-status"></span>
+                <p class="flex">
+                    <span id="last-seen" class="text-xs opacity-70">Loading...</span>
+                    <span id="typing-status" class="text-xs opacity-70 ms-3"></span>
+                </p>
             </div>
         </div>
         <div class="flex space-x-4">
@@ -474,46 +476,59 @@ const markMessagesAsSeen = async () => {
         }
     }, 1000);
     scrollToBottom();
-
     function formatDateHeader(dateString) {
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
-    // Check if the year is different from current year
-    const showYear = date.getFullYear() !== today.getFullYear();
-    
+
     if (date.toDateString() === today.toDateString()) {
         return 'Today';
     }
     if (date.toDateString() === yesterday.toDateString()) {
         return 'Yesterday';
     }
-    
-    // For dates within the same week, show just the weekday name
+
+    // For dates within the same week
     const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
-    if (daysDiff < 7 && !showYear) {
+    if (daysDiff < 7 && date.getFullYear() === today.getFullYear()) {
         return date.toLocaleDateString('en-US', { weekday: 'long' });
     }
-    
-    // For older dates, show weekday, month, day, and year (if different)
+
+    // Show full date if older
     return date.toLocaleDateString('en-US', { 
         weekday: 'long', 
         month: 'short', 
-        day: 'numeric',
-        year: showYear ? 'numeric' : undefined
+        day: 'numeric', 
+        year: today.getFullYear() !== date.getFullYear() ? 'numeric' : undefined 
     });
 }
 
-// For time formatting (separate function)
 function formatTime(dateString) {
     const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) {
+        return `${diffInSeconds}s ago`;
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+        return `${diffInMinutes}m ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+        return `${diffInHours}h ago`;
+    }
+
+    // Show time if more than 23 hours
     return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
-    }).toLowerCase(); // returns format like "2:30 pm"
+    }).toLowerCase();
 }
 
     function escapeHtml(text) {

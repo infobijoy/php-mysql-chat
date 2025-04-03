@@ -2,7 +2,7 @@
 session_start();
 include './include/config-db.php';
 if (isset($_SESSION['user_id'])) {
-    header('Location: ./deshboard.php');
+    header('Location: ./');
     exit;
 }
 if (!isset($_SESSION['user_id'])) {
@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
   // Check again after auto-login attempt
   if (isset($_SESSION['user_id'])) {
     // Auto-login successful, redirect to dashboard
-    header('Location: ./deshboard.php');
+    header('Location: ./');
     exit;
 }
 }

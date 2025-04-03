@@ -47,7 +47,7 @@ try {
         $response = [
             'success' => true,
             'message' => 'Login successful',
-            'redirect' => 'deshboard.php'
+            'redirect' => './'
         ];
         
         // Generate token for "Remember Me" if requested
