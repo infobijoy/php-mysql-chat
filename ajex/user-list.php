@@ -20,7 +20,7 @@ function getStatusClass($statusTime) {
 
 function formatLastSeen($statusTime) {
     if (isUserOnline($statusTime)) {
-        return 'Online';
+        return 'Just now';
     }
     if (!$statusTime) {
         return 'Long time ago';

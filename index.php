@@ -47,10 +47,21 @@ if ($isLoggedIn) {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 }
+$greeting='Thanks for useing';
+$currentHour = date('H');
+// Determine greeting based on time
+if ($currentHour >= 5 && $currentHour < 12) {
+    $greeting = "Good Morning";
+} elseif ($currentHour >= 12 && $currentHour < 17) {
+    $greeting = "Good Afternoon";
+} elseif ($currentHour >= 17 && $currentHour < 20) {
+    $greeting = "Good Evening";
+} else {
+    $greeting = "Good Night";
+}
 ?>
 
 <?php include './include/header.php'; ?>
-
 <style>
     .messenger-gradient {
         background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
@@ -75,8 +86,7 @@ if ($isLoggedIn) {
         border: 2px solid #3a7bd5;
     }
     .online { background-color: #2ecc71; }
-    .away { background-color: #f39c12; }
-    .busy { background-color: #e74c3c; }
+    .few-s-m-h-ago { background-color: #f39c12; }
     .offline { background-color: #95a5a6; }
     .typing-indicator span {
         animation: bounce 1.5s infinite ease-in-out;
@@ -90,9 +100,6 @@ if ($isLoggedIn) {
     @keyframes bounce {
         0%, 60%, 100% { transform: translateY(0); }
         30% { transform: translateY(-5px); }
-    }
-    .mobile-head {
-        display: none;
     }
     .seen-time-tooltip {
     transform: translateX(-50%);
@@ -109,11 +116,38 @@ if ($isLoggedIn) {
     border-style: solid;
     border-color: black transparent transparent transparent;
 }
+.mobile-head {
+    position: fixed;
+    z-index: 53;
+    width: 255px;
+    background: linear-gradient(45deg, #2992ff, #15cced);
+    padding: 12px 12px !important;
+    display: flex;
+    align-items: center;
+}
+div#user-list {
+    padding-top: 65px;
+}
+#menu-toggle {
+    z-index: 60;
+}
+.mobile-ms {
+        margin-left: 7px;
+    }
     @media (max-width:767px) {
-        div#user-list {
-        padding-top: 74px;
+    div#user-list {
+        padding-top: 73px;
         z-index: 49;
         background: linear-gradient(45deg, #06e2ff, #3f5ff9);
+    }
+    .mobile-head {
+        max-width: 100vw;
+    }
+    div#chat-box {
+        max-width: 100vw;
+    }
+    .mobile-ms {
+        margin-left: 48px;
     }
     }
 </style>
@@ -121,35 +155,23 @@ if ($isLoggedIn) {
 <?php if ($isLoggedIn): ?>
 <!-- Pure Messenger Interface -->
 <div class="flex flex-col h-screen messenger-gradient text-white">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-white border-opacity-20">
-        <div class="flex items-center space-x-3">
-            <button id="menu-toggle" class="p-2 z-50 rounded-full hover:bg-white hover:bg-opacity-10 md:hidden">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="avatar">
-                <div class="w-10 rounded-full">
-                    <img src="./profile-photo/<?= $user['profile_picture'] ?? 'default.jpg' ?>" alt="Profile" />
-                </div>
-            </div>
-            <h1 class="text-xl font-bold">Messages</h1>
-        </div>
-        <div class="flex space-x-4">
-            <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
-                <i class="fas fa-search"></i>
-            </button>
-            <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
-                <i class="fas fa-ellipsis-v"></i>
-            </button>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar User List -->
-        <div class="mobile-head"></div>
-        <div id="user-list" class="w-64 bg-white bg-opacity-10 border-r border-white border-opacity-10 overflow-y-auto fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0">
+    <div class="mobile-head px-4 fixed left-0 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 border-b border-white border-opacity-10">
+    <div class="avatar relative mobile-ms">
+        <div class="w-12 rounded-full">
+            <img class="self-img" src="./profile-photo/<?= $user['profile_picture'] ?? 'default.jpg' ?>" alt="Profile" />
         </div>
+    </div>
+    <div class="ms-4 overflow-hidden">
+        <h2 class="font-semibold truncate">Bijoy Chandra Das</h2>
+        <p class="text-xs opacity-70 truncate"><?php echo $greeting;?></p>
+    </div>
+</div>
+
+<!-- Sidebar User List -->
+<div id="user-list" class="w-64 bg-white bg-opacity-10 border-r border-white border-opacity-10 overflow-y-auto fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0">
+</div>
 
         <!-- Chat Area -->
         <div class="flex flex-col flex-1">
@@ -159,6 +181,9 @@ if ($openchat) {
     echo '
     <div class="flex items-center justify-between p-4 border-b border-white border-opacity-20">
         <div class="flex items-center space-x-3">
+            <button id="menu-toggle" class="p-2 z-50 rounded-full hover:bg-white hover:bg-opacity-10 md:hidden">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="avatar relative">
                 <div class="w-10 rounded-full">
                     <img src="./profile-photo/'.$senderPhoto.'" alt="User" />
@@ -174,12 +199,12 @@ if ($openchat) {
             </div>
         </div>
         <div class="flex space-x-4">
-            <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+            <!----<button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
                 <i class="fas fa-phone"></i>
             </button>
             <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
                 <i class="fas fa-video"></i>
-            </button>
+            </button>---->
             <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
                 <i class="fas fa-info-circle"></i>
             </button>
@@ -193,14 +218,14 @@ if ($openchat) {
     <!-- Message Input -->
     <div class="p-4 border-t border-white border-opacity-20 message-input">
         <div class="flex items-center space-x-2">
-            <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+            <!--<button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
                 <i class="fas fa-plus"></i>
-            </button>
+            </button>-->
             <input type="text" id="type-message" placeholder="Type a message" 
                    class="flex-1 bg-white bg-opacity-20 rounded-full px-4 py-2 border-none placeholder-white placeholder-opacity-70">
-            <button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+            <!--<button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
                 <i class="fas fa-microphone"></i>
-            </button>
+            </button>-->
             <button class="p-2 rounded-full bg-blue-500 text-white">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -214,6 +239,9 @@ if ($openchat) {
 } else {
     echo '
     <div class="flex flex-col items-center justify-center h-full text-center p-8">
+        <button id="menu-toggle" class="fixed top-4 left-4 p-2 z-50 rounded-full hover:bg-white hover:bg-opacity-10 md:hidden">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="w-32 h-32 bg-white bg-opacity-10 rounded-full flex items-center justify-center mb-4">
             <i class="fas fa-comments text-4xl text-white text-opacity-50"></i>
         </div>
@@ -232,14 +260,15 @@ if ($openchat) {
 </div>
 
 <script>
-    document.getElementById("menu-toggle").addEventListener("click", function() {
-        let userList = document.getElementById("user-list");
-        if (userList.classList.contains("-translate-x-full")) {
-            userList.classList.remove("-translate-x-full");
-        } else {
-            userList.classList.add("-translate-x-full");
-        }
-    });
+document.getElementById("menu-toggle").addEventListener("click", function() {
+    // Toggle user-list
+    let userList = document.getElementById("user-list");
+    userList.classList.toggle("-translate-x-full");
+    
+    // Toggle mobile-head
+    let mobileHead = document.querySelector(".mobile-head");
+    mobileHead.classList.toggle("-translate-x-full");
+});
 </script>
 
 
