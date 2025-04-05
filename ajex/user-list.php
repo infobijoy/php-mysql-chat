@@ -115,7 +115,11 @@ try {
                                 <span class="w-1 h-1 rounded-full bg-current opacity-70"></span>
                             </span>
                         <?php else: ?>
-                            <?= $lastMessage ?>
+                        <?php
+                        // Remove replyid(XXX) pattern from the message
+                        $cleanLastMessage = preg_replace('/replyid\(\d+\)\s*/i', '', $lastMessage);
+                        echo $cleanLastMessage;
+                        ?>
                         <?php endif; ?>
                     </p>
                     <?php if ($unreadCount > 0): ?>

@@ -45,8 +45,12 @@ if ($isLoggedIn) {
     $stmt->bind_param('i', $_SESSION['user_id']);
     $stmt->execute();
     $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    $userSelf = $result->fetch_assoc();
+    $selfPhoto = $userSelf['profile_picture'] ?: "default.jpg";
+    $selfName = $userSelf['display_name'] ?: $userSelf['username'];
+    $selfLastSeen = $userSelf['status'] ?: "Last Seen";
 }
+include './include/header.php'; 
 $greeting='Thanks for useing';
 $currentHour = date('H');
 // Determine greeting based on time
@@ -60,8 +64,6 @@ if ($currentHour >= 5 && $currentHour < 12) {
     $greeting = "Good Night";
 }
 ?>
-
-<?php include './include/header.php'; ?>
 <style>
     .messenger-gradient {
         background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
@@ -97,6 +99,29 @@ if ($currentHour >= 5 && $currentHour < 12) {
     .typing-indicator span:nth-child(3) {
         animation-delay: 0.4s;
     }
+    .reply-preview {
+    display: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #3b82f6;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.reply-preview .close-reply {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.replying-to-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
     @keyframes bounce {
         0%, 60%, 100% { transform: translateY(0); }
         30% { transform: translateY(-5px); }
@@ -127,6 +152,11 @@ if ($currentHour >= 5 && $currentHour < 12) {
 }
 div#user-list {
     padding-top: 65px;
+}
+.replay-text {
+    border-radius: 6px;
+    padding: 4px 5px 4px 2px;
+    background: #5cd1ff75;
 }
 #menu-toggle {
     z-index: 60;
@@ -160,11 +190,11 @@ div#user-list {
     <div class="mobile-head px-4 fixed left-0 transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 border-b border-white border-opacity-10">
     <div class="avatar relative mobile-ms">
         <div class="w-12 rounded-full">
-            <img class="self-img" src="./profile-photo/<?= $user['profile_picture'] ?? 'default.jpg' ?>" alt="Profile" />
+            <img class="self-img" src="./profile-photo/<?php echo $selfPhoto;?>" alt="Profile" />
         </div>
     </div>
     <div class="ms-4 overflow-hidden">
-        <h2 class="font-semibold truncate">Bijoy Chandra Das</h2>
+        <h2 class="font-semibold truncate"><?php echo $selfName;?></h2>
         <p class="text-xs opacity-70 truncate"><?php echo $greeting;?></p>
     </div>
 </div>
@@ -217,20 +247,20 @@ if ($openchat) {
 
     <!-- Message Input -->
     <div class="p-4 border-t border-white border-opacity-20 message-input">
-        <div class="flex items-center space-x-2">
-            <!--<button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
-                <i class="fas fa-plus"></i>
-            </button>-->
-            <input type="text" id="type-message" placeholder="Type a message" 
-                   class="flex-1 bg-white bg-opacity-20 rounded-full px-4 py-2 border-none placeholder-white placeholder-opacity-70">
-            <!--<button class="p-2 rounded-full hover:bg-white hover:bg-opacity-10">
-                <i class="fas fa-microphone"></i>
-            </button>-->
-            <button class="p-2 rounded-full bg-blue-500 text-white">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
+    <div id="reply-preview" class="reply-preview">
+        <div class="replying-to-label">Replying to: <span id="replying-to-text"></span></div>
+        <div id="reply-message-content" class="truncate"></div>
+        <span class="close-reply">&times;</span>
+        <input type="hidden" id="replying-to-id">
     </div>
+    <div class="flex items-center space-x-2">
+        <input type="text" id="type-message" placeholder="Type a message" 
+               class="flex-1 bg-white bg-opacity-20 rounded-full px-4 py-2 border-none placeholder-white placeholder-opacity-70">
+        <button id="send-button" class="p-2 rounded-full bg-blue-500 text-white">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
     
 <button id="goToBottomButton" class="fixed bottom-20 px-4 right-7 z-50 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600">
     <i class="fa-solid fa-arrow-down"></i>
@@ -380,7 +410,6 @@ const markMessagesAsSeen = async () => {
             }
         });
     }
-
     function displayMessages(messages) {
     if (JSON.stringify(messages) === JSON.stringify(previousMessages)) {
         return;
@@ -429,10 +458,42 @@ const markMessagesAsSeen = async () => {
             }
         }
         
+        // Check for replyid pattern
+        const replyIdMatch = message.message.match(/replyid\((\d+)\)/i);
+        let displayMessage = message.message;
+        let replyHtml = '';
+        
+        if (replyIdMatch) {
+            const replyId = replyIdMatch[1];
+            // Find the original message being replied to
+            const originalMessage = messages.find(m => m.id == replyId);
+            
+            if (originalMessage) {
+                // Clean both the original message and current message
+                const cleanOriginalMessage = originalMessage.message.replace(/replyid\(\d+\)/i, '').trim();
+                displayMessage = message.message.replace(replyIdMatch[0], '').trim();
+                
+                // Create reply preview
+                const originalSenderIsCurrent = originalMessage.sender_id == <?= $_SESSION['user_id'] ?? 0 ?>;
+                const senderName = originalSenderIsCurrent ? 'You' : originalMessage.sender_name || '<?= $userName;?>';
+                
+                replyHtml = `
+                    <div class="flex replay-text items-start mb-1 -mt-1">
+                        <div class="w-1 h-8 ${isCurrentUser ? 'bg-blue-300' : 'bg-blue-400'} rounded-full mr-2"></div>
+                        <div class="text-xs ${isCurrentUser ? 'text-blue-700' : 'text-gray-200'}">
+                            <div class="font-medium">${senderName}</div>
+                            <div class="truncate max-w-[180px]">${escapeHtml(cleanOriginalMessage)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
         const messageHtml = `
             <div class="flex ${messageClass} mb-2" data-message-id="${message.id}">
                 <div class="${bubbleClass} rounded-2xl p-3 max-w-[70%] relative">
-                    <p>${escapeHtml(message.message)}</p>
+                    ${replyHtml}
+                    <p data-message-id="${message.id}">${escapeHtml(displayMessage)}</p>
                     <div class="status-container inline-flex items-center float-right mt-1 relative">
                         <span class="text-xs opacity-70">${messageTime}</span>
                         ${statusIcon}
@@ -447,13 +508,10 @@ const markMessagesAsSeen = async () => {
     // Add click event for seen time tooltip
     $('.status-container').on('click', function(e) {
         e.stopPropagation();
-        // Hide all other tooltips first
         $('.seen-time-tooltip').addClass('hidden');
-        // Show the clicked one
         $(this).find('.seen-time-tooltip').toggleClass('hidden');
     });
 
-    // Hide tooltips when clicking anywhere else
     $(document).on('click', function() {
         $('.seen-time-tooltip').addClass('hidden');
     });
@@ -566,52 +624,80 @@ function formatTime(dateString) {
 });
 
 
-$(document).ready(function() {
-    const messageInput = $("input[type='text']");
-    const sendButton = $(".fa-paper-plane").parent();
-    const chatBox = $('#chat-box');
+// Global variables
+let replyingToId = null;
+
+// Double click handler for messages
+$(document).on('dblclick', '[data-message-id]', function() {
+    const messageId = $(this).data('message-id');
+    const messageContent = $(this).find('p[data-message-id]').text().trim();
     
-    function sendMessage() {
-        const message = messageInput.val().trim();
-        if (!message) return;
-        
-        const receiverId = selectedUserId; // Ensure this variable is set globally
-        if (!receiverId) {
-            alert("No user selected to send message.");
-            return;
-        }
-        
-        $.ajax({
-            url: './ajex/send-message.php',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                receiver_id: receiverId,
-                message: message
-            }),
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    messageInput.val('');
-                    loadChatMessages(receiverId, true); // Refresh messages
-                } else {
-                    console.error("Error sending message:", response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX error:", error);
-            }
-        });
+    // Set the reply preview
+    $('#replying-to-text').text(messageContent.substring(0, 30) + (messageContent.length > 30 ? '...' : ''));
+    $('#reply-message-content').text(messageContent);
+    $('#replying-to-id').val(messageId);
+    $('.reply-preview').show();
+    
+    replyingToId = messageId;
+    $('#type-message').focus();
+});
+
+// Close reply preview
+$(document).on('click', '.close-reply', function() {
+    $('.reply-preview').hide();
+    replyingToId = null;
+});
+
+// Modified sendMessage function
+function sendMessage() {
+    const message = $('#type-message').val().trim();
+    if (!message) return;
+    
+    const receiverId = selectedUserId;
+    if (!receiverId) {
+        alert("No user selected to send message.");
+        return;
     }
-
-    sendButton.on('click', sendMessage);
-
-    messageInput.on('keypress', function(event) {
-        if (event.which === 13 && !event.shiftKey) { // Enter key without Shift
-            event.preventDefault();
-            sendMessage();
+    
+    // Prepare message content
+    let finalMessage = message;
+    if (replyingToId) {
+        finalMessage = `replyid(${replyingToId}) ${message}`;
+    }
+    
+    $.ajax({
+        url: './ajex/send-message.php',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            receiver_id: receiverId,
+            message: finalMessage
+        }),
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                $('#type-message').val('');
+                $('.reply-preview').hide();
+                replyingToId = null;
+                loadChatMessages(receiverId, true);
+            } else {
+                console.error("Error sending message:", response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX error:", error);
         }
     });
+}
+
+// Event listeners
+$('#send-button').on('click', sendMessage);
+
+$('#type-message').on('keypress', function(event) {
+    if (event.which === 13 && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
 });
 
 
