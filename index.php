@@ -64,124 +64,94 @@ if ($currentHour >= 5 && $currentHour < 12) {
     $greeting = "Good Night";
 }
 ?>
-<style>
-    .messenger-gradient {
-        background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
-    }
-    .chat-container {
-        height: calc(100vh - 80px);
-    }
-    .conversation-card:hover {
-        background-color: rgba(255,255,255,0.1);
-        transform: translateX(5px);
-    }
-    .active-conversation {
-        background-color: rgba(255,255,255,0.15);
-        border-left: 3px solid white;
-    }
-    .message-input {
-        backdrop-filter: blur(10px);
-    }
-    .status-dot {
-        width: 12px;
-        height: 12px;
-        border: 2px solid #3a7bd5;
-    }
-    .online { background-color: #2ecc71; }
-    .few-s-m-h-ago { background-color: #f39c12; }
-    .offline { background-color: #95a5a6; }
-    .typing-indicator span {
-        animation: bounce 1.5s infinite ease-in-out;
-    }
-    .typing-indicator span:nth-child(2) {
-        animation-delay: 0.2s;
-    }
-    .typing-indicator span:nth-child(3) {
-        animation-delay: 0.4s;
-    }
-    .reply-preview {
-    display: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-left: 3px solid #3b82f6;
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    border-radius: 8px;
+<style>#emoji-picker-container {
+  position: fixed;
+  z-index: 10000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 12px;
+  max-width: 300px;
+}
+
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.emoji-option {
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.emoji-option:hover {
+  background: #f0f0f0;
+  transform: scale(1.15);
+}
+
+.emoji-expand {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.emoji-expand:hover {
+  background: #e0e0e0;
+  transform: scale(1.1);
+}
+
+/* Scrollbar styling */
+.emoji-picker::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emoji-picker::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+.reaction {
+    cursor: pointer;
     position: relative;
 }
-
-.reply-preview .close-reply {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-    cursor: pointer;
-    opacity: 0.7;
+.reaction-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-left: 4px;
 }
-
-.replying-to-label {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    margin-bottom: 4px;
+.justify-end .reaction-badge {
+    background: rgb(66 184 230 / 44%);
 }
-    @keyframes bounce {
-        0%, 60%, 100% { transform: translateY(0); }
-        30% { transform: translateY(-5px); }
-    }
-    .seen-time-tooltip {
-    transform: translateX(-50%);
-    left: 50%;
+.reaction-btn {
+    position: relative;
+    margin-bottom: -35px;
+    margin-left: -22px;
+    padding: 3px 9px;
+    background: #00edff7d;
+    border-radius: 9px;
+    color: #ffffff;
 }
-
-.seen-time-tooltip:after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-}
-.mobile-head {
-    position: fixed;
-    z-index: 53;
-    width: 255px;
-    background: linear-gradient(45deg, #2992ff, #15cced);
-    padding: 12px 12px !important;
-    display: flex;
-    align-items: center;
-}
-div#user-list {
-    padding-top: 65px;
-}
-.replay-text {
-    border-radius: 6px;
-    padding: 4px 5px 4px 2px;
-    background: #5cd1ff75;
-}
-#menu-toggle {
-    z-index: 60;
-}
-.mobile-ms {
-        margin-left: 7px;
-    }
-    @media (max-width:767px) {
-    div#user-list {
-        padding-top: 73px;
-        z-index: 49;
-        background: linear-gradient(45deg, #06e2ff, #3f5ff9);
-    }
-    .mobile-head {
-        max-width: 100vw;
-    }
-    div#chat-box {
-        max-width: 100vw;
-    }
-    .mobile-ms {
-        margin-left: 48px;
-    }
-    }
 </style>
-
 <?php if ($isLoggedIn): ?>
 <!-- Pure Messenger Interface -->
 <div class="flex flex-col h-screen messenger-gradient text-white">
@@ -203,6 +173,12 @@ div#user-list {
 <div id="user-list" class="w-64 bg-white bg-opacity-10 border-r border-white border-opacity-10 overflow-y-auto fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0">
 </div>
 
+<div id="emoji-picker-container" style="display: none;">
+  <div id="emoji-picker" class="emoji-picker">
+    <!-- Emojis will be inserted here by JavaScript -->
+    <div class="emoji-expand">+</div>
+  </div>
+</div>
         <!-- Chat Area -->
         <div class="flex flex-col flex-1">
             <!-- Chat Header -->
@@ -425,6 +401,7 @@ const markMessagesAsSeen = async () => {
 
     let currentDate = null;
     let hasNewMessages = false;
+    const currentUserId = <?= $_SESSION['user_id'] ?? 0 ?>;
 
     messages.forEach(message => {
         if (message.id > lastMessageId) {
@@ -437,7 +414,7 @@ const markMessagesAsSeen = async () => {
             const dateHeader = formatDateHeader(message.created_at);
             chatBox.append(`<div class="text-center py-4 text-xs opacity-50">${dateHeader}</div>`);
         }
-        const isCurrentUser = message.sender_id == <?= $_SESSION['user_id'] ?? 0 ?>;
+        const isCurrentUser = message.sender_id == currentUserId;
         const messageClass = isCurrentUser ? 'justify-end' : 'justify-start';
         const bubbleClass = isCurrentUser ? 'bg-white text-blue-900' : 'bg-white bg-opacity-20';
         const messageTime = formatTime(message.created_at);
@@ -474,8 +451,8 @@ const markMessagesAsSeen = async () => {
                 displayMessage = message.message.replace(replyIdMatch[0], '').trim();
                 
                 // Create reply preview
-                const originalSenderIsCurrent = originalMessage.sender_id == <?= $_SESSION['user_id'] ?? 0 ?>;
-                const senderName = originalSenderIsCurrent ? 'You' : originalMessage.sender_name || '<?= $userName;?>';
+                const originalSenderIsCurrent = originalMessage.sender_id == currentUserId;
+                const senderName = originalSenderIsCurrent ? 'You' : originalMessage.sender_name || 'User';
                 
                 replyHtml = `
                     <div class="flex replay-text items-start mb-1 -mt-1">
@@ -489,15 +466,70 @@ const markMessagesAsSeen = async () => {
             }
         }
         
+        // Process reactions
+        let reactionsHtml = '';
+        if (message.reactions && message.reactions.length > 0) {
+            // Group reactions by emoji
+            const groupedReactions = {};
+            message.reactions.forEach(reaction => {
+                if (!groupedReactions[reaction.emoji]) {
+                    groupedReactions[reaction.emoji] = {
+                        count: 0,
+                        users: [],
+                        currentUserReacted: false
+                    };
+                }
+                groupedReactions[reaction.emoji].count++;
+                groupedReactions[reaction.emoji].users.push({
+                    id: reaction.user_id,
+                    name: reaction.user_name,
+                    avatar: reaction.user_avatar || 'default-avatar.png'
+                });
+                if (reaction.user_id == currentUserId) {
+                    groupedReactions[reaction.emoji].currentUserReacted = true;
+                }
+            });
+            
+            // Generate reactions HTML
+            reactionsHtml = '<div class="reactions-container flex flex-wrap gap-1 mt-1">';
+            for (const [emoji, data] of Object.entries(groupedReactions)) {
+                reactionsHtml += `
+                    <div class="reaction-group relative group" data-emoji="${emoji}">
+                        <span class="reaction-badge ${data.currentUserReacted ? 'user-reacted' : ''}">
+                            ${emoji} ${data.count}
+                        </span>
+                        <div class="reactors-tooltip hidden group-hover:block absolute bottom-full left-0 mb-1 bg-white text-gray-800 text-xs rounded shadow-lg p-2 z-10 min-w-[120px]">
+                            <div class="font-semibold mb-1">${emoji} Reacted by:</div>
+                            <div class="flex flex-wrap gap-1">
+                                ${data.users.map(user => `
+                                    <img src="${user.avatar}" 
+                                         alt="${user.name}" 
+                                         class="w-6 h-6 rounded-full border border-white"
+                                         title="${user.name}">
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            reactionsHtml += '</div>';
+        }
+        
         const messageHtml = `
             <div class="flex ${messageClass} mb-2" data-message-id="${message.id}">
                 <div class="${bubbleClass} rounded-2xl p-3 max-w-[70%] relative">
                     ${replyHtml}
                     <p data-message-id="${message.id}">${escapeHtml(displayMessage)}</p>
-                    <div class="status-container inline-flex items-center float-right mt-1 relative">
-                        <span class="text-xs opacity-70">${messageTime}</span>
-                        ${statusIcon}
-                        ${seenTimeTooltip}
+                    ${reactionsHtml}
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="reaction-btn text-gray-400 hover:text-blue-500 cursor-pointer text-sm" reaction-message-id="${message.id}">
+                            <i class="fa-regular fa-face-smile"></i>
+                        </span>
+                        <div class="status-container inline-flex items-center relative">
+                            <span class="text-xs opacity-70">${messageTime}</span>
+                            ${statusIcon}
+                            ${seenTimeTooltip}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -804,8 +836,7 @@ $('#type-message').on('keypress', function(event) {
     updateUserStatus();
     setInterval(updateUserStatus, 5000);
 });
-</script>
-<script>
+
         function checkTyping() {
             var typingForUserId = '<?php echo $selectedUserId;?>'; // Replace with the actual user ID you're checking for
             var loggedInUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0; ?>; // PHP session for loged in user
@@ -820,8 +851,150 @@ $('#type-message').on('keypress', function(event) {
                     document.getElementById('typing-status').innerHTML = xhr.responseText;
                 }
             };
-            xhr.open("GET", "./ajex/see-typing-status.php?typingForUserId=" + typingForUserId + "&loggedInUserId=" + loggedInUserId, true); //Replace your_php_file.php with the actual file name.
+            xhr.open("GET", "./ajex/see-typing-status.php?typingForUserId=" + typingForUserId + "&loggedInUserId=" + loggedInUserId, true);
             xhr.send();
         }
         setInterval(checkTyping, 1000); // Check every 1 second
-    </script>
+
+
+
+
+
+
+
+// Full emoji array (50 most popular emojis)
+const allEmojis = [
+  "😂","❤️","😍","🤣","😊","🙏","💕","😭","😘","👍",
+  "😁","👌","😔","🔥","😏","😅","👏","😉","😎","🤔",
+  "😢","😩","😋","😆","🙄","💔","😳","💀","🙌","🎉",
+  "🤦","💖","😌","🤷","😑","😱","😴","😠","😇","🤪",
+  "🥰","🤩","😈","🙈","🙉","🙊","💯","👀","🤢","🤮"
+];
+
+let currentReactingMessageId = null;
+let isPickerInitialized = false;
+
+// Initialize the emoji picker (show first 5 emojis + expand button)
+function initEmojiPicker() {
+  const picker = $('#emoji-picker');
+  picker.empty();
+  
+  // Add first 5 emojis
+  allEmojis.slice(0, 5).forEach(emoji => {
+    picker.append(`<div class="emoji-option" data-emoji="${emoji}">${emoji}</div>`);
+  });
+  
+  // Add expand button
+  picker.append('<div class="emoji-expand">+</div>');
+  picker.data('expanded', false);
+  isPickerInitialized = true;
+}
+
+// Toggle between showing 5 emojis and all emojis
+function toggleEmojiExpansion() {
+  const picker = $('#emoji-picker');
+  const isExpanded = picker.data('expanded');
+  
+  picker.empty();
+  
+  if (isExpanded) {
+    // Collapse to 5 emojis
+    allEmojis.slice(0, 5).forEach(emoji => {
+      picker.append(`<div class="emoji-option" data-emoji="${emoji}">${emoji}</div>`);
+    });
+    picker.append('<div class="emoji-expand">+</div>');
+    picker.data('expanded', false);
+  } else {
+    // Expand to all emojis
+    allEmojis.forEach(emoji => {
+      picker.append(`<div class="emoji-option" data-emoji="${emoji}">${emoji}</div>`);
+    });
+    picker.append('<div class="emoji-expand">−</div>');
+    picker.data('expanded', true);
+  }
+}
+
+// Show emoji picker when clicking reaction button
+$(document).on('click', '[reaction-message-id]', function(e) {
+  e.stopPropagation();
+  currentReactingMessageId = $(this).attr('reaction-message-id');
+  
+  const container = $('#emoji-picker-container');
+  const picker = $('#emoji-picker');
+  const rect = this.getBoundingClientRect();
+  
+  // Initialize picker if not already done
+  if (!isPickerInitialized) {
+    initEmojiPicker();
+  }
+  
+  // Position picker (ensure it stays within viewport)
+  let left = rect.left;
+  let top = rect.bottom + 5;
+  const pickerWidth = 300;
+  const margin = 10;
+  
+  if (left + pickerWidth > window.innerWidth) {
+    left = window.innerWidth - pickerWidth - margin;
+  }
+  if (top + 200 > window.innerHeight) {
+    top = rect.top - 200 - 5;
+  }
+  
+  container.css({
+    left: `${left}px`,
+    top: `${top}px`,
+    display: 'block'
+  });
+});
+
+// Handle emoji selection
+$(document).on('click', '.emoji-option', function() {
+  const emoji = $(this).data('emoji');
+  if (currentReactingMessageId) {
+    updateReaction(currentReactingMessageId, emoji);
+  }
+  $('#emoji-picker-container').hide();
+});
+
+// Handle expand/collapse
+$(document).on('click', '.emoji-expand', function(e) {
+  e.stopPropagation();
+  toggleEmojiExpansion();
+});
+
+// Hide picker when clicking outside
+$(document).on('click', function(e) {
+  const container = $('#emoji-picker-container');
+  const picker = $('#emoji-picker');
+  
+  if (!$(e.target).closest('#emoji-picker-container').length && 
+      !$(e.target).is('[reaction-message-id]')) {
+    
+    // If picker is expanded, collapse it first
+    if (picker.data('expanded')) {
+      toggleEmojiExpansion(); // This will reset to "+" state
+    }
+    
+    // Then hide the container
+    container.hide();
+  }
+});
+
+function updateReaction(messageId, emoji) {
+  $.ajax({
+    url: './ajex/update_reaction.php',
+    method: 'POST',
+    data: {
+      message_id: messageId,
+      emoji: emoji
+    },
+    success: function(response) {
+      // Update UI if needed
+    },
+    error: function(xhr, status, error) {
+      console.error("Error updating reaction:", error);
+    }
+  });
+}
+</script>
