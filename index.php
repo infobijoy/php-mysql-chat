@@ -151,6 +151,48 @@ if ($currentHour >= 5 && $currentHour < 12) {
     border-radius: 9px;
     color: #ffffff;
 }
+.reactors-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 45%;
+  transform: translateX(-55%);
+  margin-bottom: 0.5rem;
+  z-index: 100;
+  width: max-content;
+}
+
+.reactors-tooltip > div {
+  background: white;
+  color: #1f2937;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f3f4f6;
+  padding: 0.5rem;
+  min-width: 100px;
+  max-width: 300px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Edge case handling */
+@media (max-width: 400px) {
+  .reactors-tooltip {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+}
 </style>
 <?php if ($isLoggedIn): ?>
 <!-- Pure Messenger Interface -->
@@ -471,24 +513,32 @@ const markMessagesAsSeen = async () => {
         if (message.reactions && message.reactions.length > 0) {
             // Group reactions by emoji
             const groupedReactions = {};
+
             message.reactions.forEach(reaction => {
-                if (!groupedReactions[reaction.emoji]) {
-                    groupedReactions[reaction.emoji] = {
-                        count: 0,
-                        users: [],
-                        currentUserReacted: false
-                    };
-                }
-                groupedReactions[reaction.emoji].count++;
-                groupedReactions[reaction.emoji].users.push({
-                    id: reaction.user_id,
-                    name: reaction.user_name,
-                    avatar: reaction.user_avatar || 'default-avatar.png'
-                });
-                if (reaction.user_id == currentUserId) {
-                    groupedReactions[reaction.emoji].currentUserReacted = true;
-                }
-            });
+    if (!groupedReactions[reaction.emoji]) {
+        groupedReactions[reaction.emoji] = {
+            count: 0,
+            users: [],
+            currentUserReacted: false
+        };
+    }
+    groupedReactions[reaction.emoji].count++;
+    
+    // Use PHP session to determine avatar
+    const avatar = reaction.user_id == <?= $_SESSION['user_id'] ?? 'null' ?> 
+        ? './profile-photo/<?= $selfPhoto ?? 'default.jpg' ?>' 
+        : './profile-photo/' + (reaction.user_avatar || 'default.jpg');
+    
+    groupedReactions[reaction.emoji].users.push({
+        id: reaction.user_id,
+        name: reaction.user_name,
+        avatar: avatar
+    });
+    
+    if (reaction.user_id == currentUserId) {
+        groupedReactions[reaction.emoji].currentUserReacted = true;
+    }
+});
             
             // Generate reactions HTML
             reactionsHtml = '<div class="reactions-container flex flex-wrap gap-1 mt-1">';
@@ -498,7 +548,8 @@ const markMessagesAsSeen = async () => {
                         <span class="reaction-badge ${data.currentUserReacted ? 'user-reacted' : ''}">
                             ${emoji} ${data.count}
                         </span>
-                        <div class="reactors-tooltip hidden group-hover:block absolute bottom-full left-0 mb-1 bg-white text-gray-800 text-xs rounded shadow-lg p-2 z-10 min-w-[120px]">
+                        <div class="reactors-tooltip hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-[100]">
+                        <div class="bg-white text-gray-800 text-xs rounded-lg shadow-xl border border-gray-100 p-2 min-w-[100px] max-w-[300px] max-h-[500px] overflow-auto custom-scrollbar">
                             <div class="font-semibold mb-1">${emoji} Reacted by:</div>
                             <div class="flex flex-wrap gap-1">
                                 ${data.users.map(user => `
@@ -507,7 +558,7 @@ const markMessagesAsSeen = async () => {
                                          class="w-6 h-6 rounded-full border border-white"
                                          title="${user.name}">
                                 `).join('')}
-                            </div>
+                            </div></div>
                         </div>
                     </div>
                 `;
@@ -975,7 +1026,6 @@ $(document).on('click', function(e) {
     if (picker.data('expanded')) {
       toggleEmojiExpansion(); // This will reset to "+" state
     }
-    
     // Then hide the container
     container.hide();
   }
@@ -997,4 +1047,33 @@ function updateReaction(messageId, emoji) {
     }
   });
 }
+document.querySelectorAll('[reaction-message-id]').forEach(button => {
+  button.addEventListener('mouseenter', function() {
+    const tooltipContainer = this.querySelector('.reactors-tooltip-container');
+    if (!tooltipContainer) return;
+    
+    tooltipContainer.style.display = 'block';
+    
+    // Check viewport boundaries
+    const rect = tooltipContainer.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    
+    if (rect.right > viewportWidth) {
+      tooltipContainer.style.left = 'auto';
+      tooltipContainer.style.right = '0';
+    }
+    
+    if (rect.left < 0) {
+      tooltipContainer.style.left = '0';
+      tooltipContainer.style.right = 'auto';
+    }
+  });
+  
+  button.addEventListener('mouseleave', function() {
+    const tooltipContainer = this.querySelector('.reactors-tooltip-container');
+    if (tooltipContainer) {
+      tooltipContainer.style.display = 'none';
+    }
+  });
+});
 </script>
